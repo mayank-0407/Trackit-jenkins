@@ -5,13 +5,8 @@ docker network create jenkinss
 
 1.
    ```bash
-   docker run -d \
-  --name jenkins \
-  -network jenkinss \
-  -p 8080:8080 -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins/jenkins:lts
-  ```
+   docker run -d --name jenkins -network jenkinss -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+   ```
 -p 8080:8080 → Jenkins UI will be available at http://localhost:8080
 
 -p 50000:50000 → Needed for connecting agents (workers)
@@ -75,3 +70,55 @@ pipeline {
 ```
 }
 
+
+### Basic Jenkinsfile 
+```bash
+pipeline {
+    agent {label 'trackit-node'}
+    environment {
+        MONGODB_URI=""
+        
+        NEXTAUTH_URL="https://trackit.mayankaggarwal.me"
+        NEXTAUTH_SECRET=""
+        
+        ENCRYPTION_KEY=""
+        JWT_SECRET=""
+        
+        BASE_URL="https://trackit.mayankaggarwal.me"
+        
+        EMAIL_USER=""
+        EMAIL_PASS=""
+    }
+    stages {
+        stage('clone-code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/mayank-0407/Trackit-jenkins.git'
+            }
+        }
+        stage('Install') {
+            steps {
+                sh 'npm install'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+        stage('Run') {
+            steps {
+                sh 'npm run dev'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Next.js build successful ✅'
+        }
+        failure {
+            echo 'Build failed ❌'
+        }
+    }
+}
+
+```
